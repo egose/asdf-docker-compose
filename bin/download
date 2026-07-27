@@ -1,0 +1,73 @@
+#!/usr/bin/env bash
+set -eo pipefail
+
+tool_name="docker-compose"
+github_coordinates="docker/compose"
+base_download_url="https://github.com/${github_coordinates}/releases/download"
+
+version="$ASDF_INSTALL_VERSION"
+download_path="$ASDF_DOWNLOAD_PATH"
+
+# 1. Platform Mapping
+# docker-compose publishes raw binaries named `docker-compose-{platform}-{arch}`
+# with platform values `darwin` and `linux` (and `windows` for Windows).
+platform=$(uname | tr '[:upper:]' '[:lower:]')
+case "$platform" in
+darwin | linux)
+  :
+  ;;
+*)
+  echo "Unsupported platform: $platform"
+  exit 1
+  ;;
+esac
+
+# 2. Architecture Mapping
+# docker-compose publishes binaries with arch names matching uname -m directly
+# (aarch64, x86_64, armv6, armv7, ppc64le, riscv64, s390x).
+arch=$(uname -m | tr '[:upper:]' '[:lower:]')
+case "$arch" in
+x86_64 | amd64 | x64)
+  arch="x86_64"
+  ;;
+aarch64 | arm64)
+  arch="aarch64"
+  ;;
+armv6l)
+  arch="armv6"
+  ;;
+armv7l)
+  arch="armv7"
+  ;;
+ppc64le | ppcle64)
+  arch="ppc64le"
+  ;;
+riscv64)
+  arch="riscv64"
+  ;;
+s390x)
+  arch="s390x"
+  ;;
+*)
+  echo "Unsupported architecture: $arch"
+  exit 1
+  ;;
+esac
+
+# 3. Extension Mapping
+# docker-compose releases are raw binaries (no archive extension).
+filename="${tool_name}-${platform}-${arch}"
+
+mkdir -p "$download_path"
+download_url="${base_download_url}/v${version}/${filename}"
+outfile="${download_path}/${filename}"
+
+echo "Attempting to download: $download_url"
+
+if curl -L --fail --connect-timeout 10 --retry 3 "${download_url}" -o "${outfile}"; then
+  echo "Download successful."
+  exit 0
+else
+  echo "Error: Failed to download ${filename} for v${version}."
+  exit 1
+fi
