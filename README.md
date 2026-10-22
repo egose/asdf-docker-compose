@@ -31,6 +31,20 @@ asdf global docker-compose <version>
 docker-compose version
 ```
 
+### Docker CLI plugin
+
+To also make Compose available as `docker compose`, link the asdf shim into
+Docker's CLI plugin directory:
+
+```sh
+mkdir -p "$HOME/.docker/cli-plugins"
+ln -sf "$(command -v docker-compose)" "$HOME/.docker/cli-plugins/docker-compose"
+```
+
+Linking the shim rather than a version-specific installation keeps both
+`docker-compose` and `docker compose` in sync when the selected asdf version
+changes.
+
 Please check [asdf](https://github.com/asdf-vm/asdf) for more details.
 
 # License
