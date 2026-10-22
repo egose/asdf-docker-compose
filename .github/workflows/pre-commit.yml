@@ -10,6 +10,8 @@ jobs:
 
     - name: Install asdf tools
       uses: egose/actions/asdf-tools@799b388fb3497236093c6eb7e3eac0b4c8f956ce
+      with:
+        github-token: ${{ github.token }}
 
     - name: Install python tools
       run: |
